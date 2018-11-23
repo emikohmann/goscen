@@ -12,27 +12,3 @@ type goscenLoader struct {
     DependenciesID      []string        `json:"dependencies"`
     DependenciesLoaders []*goscenLoader `json:"-"`
 }
-
-const (
-    defaultConfigFile      = "./config.json"
-    scoringTypeComplete    = "complete"
-    scoringTypeProgressive = "progressive"
-    loaderTypeAPI          = "API"
-)
-
-var (
-    scoringTypes = []string{
-        scoringTypeComplete,
-        scoringTypeProgressive,
-    }
-
-    loaderTypes = []string{
-        loaderTypeAPI,
-    }
-)
-
-func init() {
-    scoring := read()
-    scoring.check()
-    scoring.load()
-}

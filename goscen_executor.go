@@ -6,7 +6,7 @@ import (
 )
 
 func read() *goscenScoring {
-    bytes, err := ioutil.ReadFile(defaultConfigFile)
+    bytes, err := ioutil.ReadFile("./config.json")
     if err != nil {
         panic(err)
     }
