@@ -13,7 +13,7 @@
             "dependencies": []
         },
         {
-            "id": "loader_1",
+            "id": "loader_2",
             "type": "API",
             "dependencies": [
                 "loader_1"
