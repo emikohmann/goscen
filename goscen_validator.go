@@ -110,3 +110,11 @@ func (loader *goscenLoader) checkType() {
     }
     panic(errors.New("loader type is not valid"))
 }
+
+func (scoring *goscenScoring) checkLoadersExecutions() {
+    for _, loader := range scoring.Loaders {
+        if loader.Execution == nil {
+            panic(errors.New(fmt.Sprintf("%s loader has nil execution", loader.ID)))
+        }
+    }
+}

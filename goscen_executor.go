@@ -53,18 +53,47 @@ func (scoring *goscenScoring) serve() {
     })
 
     router.POST("/scoring", func(c *gin.Context) {
-        scoring.success()
-        execution, apiErr := scoring.run()
-        if apiErr != nil {
+        if apiErr := scoring.run(); apiErr != nil {
             c.JSON(apiErr.Status(), apiErr)
             return
         }
-        c.JSON(http.StatusCreated, execution)
+        c.JSON(http.StatusCreated, nil)
     })
 
     router.Run(":8080")
 }
 
-func (scoring *goscenScoring) run() (*goscenExecution, apierrors.ApiError) {
-    return &goscenExecution{}, nil
+func (scoring *goscenScoring) run() apierrors.ApiError {
+    executions := make(map[*goscenLoader]bool)
+    for _, loader := range scoring.Loaders {
+        if apiErr := loader.run(executions); apiErr != nil {
+            return apiErr
+        }
+    }
+    return nil
+}
+
+func (loader *goscenLoader) run(executions map[*goscenLoader]bool) apierrors.ApiError {
+    if executions[loader] == true {
+        return nil
+    }
+    for _, dependencyLoader := range loader.DependenciesLoaders {
+        if executions[dependencyLoader] == false {
+            if apiErr := dependencyLoader.run(executions); apiErr != nil {
+                return apiErr
+            }
+        }
+    }
+    inputs := make([]interface{}, 0)
+    for _, dependencyLoader := range loader.DependenciesLoaders {
+        inputs = append(inputs, dependencyLoader.ExecutionResult)
+    }
+    // fmt.Println("Running", loader.ID, "loader with inputs", inputs)
+    res, apiErr := loader.Execution(inputs...)
+    if apiErr != nil {
+        return apiErr
+    }
+    loader.ExecutionResult = res
+    executions[loader] = true
+    return nil
 }
