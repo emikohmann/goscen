@@ -5,140 +5,84 @@ import (
     "errors"
 )
 
-func (scoringConfig *scoringConfig) check() error {
-    const (
-        errNilScoringConfig = "scoring config is nil"
-    )
-    if scoringConfig == nil {
-        return errors.New(errNilScoringConfig)
-    }
-
-    if err := scoringConfig.checkID(); err != nil {
-        return err
-    }
-
-    if err := scoringConfig.checkType(); err != nil {
-        return err
-    }
-
-    if err := scoringConfig.checkLoaders(); err != nil {
-        return err
-    }
-
-    return nil
+func (scoring *goscenScoring) check() {
+    scoring.checkID()
+    scoring.checkType()
+    scoring.checkLoaders()
 }
 
-func (scoringConfig *scoringConfig) checkID() error {
-    const (
-        errEmptyScoringID = "scoring ID is empty"
-    )
-    if scoringConfig.ID == "" {
-        return errors.New(errEmptyScoringID)
+func (scoring *goscenScoring) checkID() {
+    if scoring.ID == "" {
+        panic(errors.New("scoring ID is empty"))
     }
-    return nil
 }
 
-func (scoringConfig *scoringConfig) checkType() error {
-    const (
-        errInvalidScoringType  = "scoring type is not valid"
-        scoringTypeComplete    = "complete"
-        scoringTypeProgressive = "progressive"
-    )
-    switch scoringConfig.Type {
-    case scoringTypeComplete:
-    case scoringTypeProgressive:
-    default:
-        return errors.New(errInvalidScoringType)
-    }
-    return nil
-}
-
-func (scoringConfig *scoringConfig) checkLoaders() error {
-    if err := scoringConfig.checkLoadersUniqueness(); err != nil {
-        return err
-    }
-
-    if err := scoringConfig.checkLoadersDependencies(); err != nil {
-        return err
-    }
-
-    for _, loader := range scoringConfig.Loaders {
-        if err := loader.check(); err != nil {
-            return err
+func (scoring *goscenScoring) checkType() {
+    for _, scoringType := range scoringTypes {
+        if scoring.Type == scoringType {
+            return
         }
     }
-    return nil
+    panic(errors.New("scoring type is not valid"))
 }
 
-func (scoringConfig *scoringConfig) checkLoadersUniqueness() error {
-    const (
-        errDuplicatedLoader = "%s loader is duplicated"
-    )
+func (scoring *goscenScoring) checkLoaders() {
+    scoring.checkLoadersUniqueness()
+    scoring.checkLoadersDependencies()
+    for _, loader := range scoring.Loaders {
+        loader.check()
+    }
+}
+
+func (scoring *goscenScoring) checkLoadersUniqueness() {
     uniqueness := make(map[string]int)
-    for _, loader := range scoringConfig.Loaders {
+    for _, loader := range scoring.Loaders {
         uniqueness[loader.ID]++
     }
     for id, count := range uniqueness {
         if count > 1 {
-            return errors.New(fmt.Sprintf(errDuplicatedLoader, id))
+            panic(errors.New(fmt.Sprintf("%s loader is duplicated", id)))
         }
     }
-    return nil
 }
 
-func (scoringConfig *scoringConfig) checkLoadersDependencies() error {
-    if err := scoringConfig.checkDependenciesExistence(); err != nil {
-        return err
-    }
-
-    if err := scoringConfig.checkDependenciesCycles(); err != nil {
-        return err
-    }
-
-    return nil
+func (scoring *goscenScoring) checkLoadersDependencies() {
+    scoring.checkDependenciesExistence()
+    scoring.checkDependenciesCycles()
 }
 
-func (scoringConfig *scoringConfig) checkDependenciesExistence() error {
-    const (
-        errDependencyNotExists = "dependency %s for loader %s doesn't exists"
-    )
+func (scoring *goscenScoring) checkDependenciesExistence() {
     dependencies := make(map[string]int)
-    for _, loader := range scoringConfig.Loaders {
+    for _, loader := range scoring.Loaders {
         dependencies[loader.ID]++
     }
-    for _, loader := range scoringConfig.Loaders {
-        for _, dependency := range loader.Dependencies {
+    for _, loader := range scoring.Loaders {
+        for _, dependency := range loader.DependenciesID {
             if dependencies[dependency] == 0 {
-                return errors.New(fmt.Sprintf(errDependencyNotExists, dependency, loader.ID))
+                panic(errors.New(fmt.Sprintf("dependency %s for loader %s doesn't exists", dependency, loader.ID)))
             }
         }
     }
-    return nil
 }
 
-func (scoringConfig *scoringConfig) checkDependenciesCycles() error {
-    const (
-        errCyclicLoaderDependencies = "%s loader has cyclic dependencies"
-    )
-    for _, loader := range scoringConfig.Loaders {
+func (scoring *goscenScoring) checkDependenciesCycles() {
+    for _, loader := range scoring.Loaders {
         visited := make(map[string]bool)
-        if dependencyCycle := scoringConfig.isDependencyCyclic(loader.ID, visited); dependencyCycle == true {
-            return errors.New(fmt.Sprintf(errCyclicLoaderDependencies, loader.ID))
+        if dependencyCycle := scoring.isDependencyCyclic(loader.ID, visited); dependencyCycle == true {
+            panic(errors.New(fmt.Sprintf("%s loader has cyclic dependencies", loader.ID)))
         }
-        fmt.Println(visited)
     }
-    return nil
 }
 
-func (scoringConfig *scoringConfig) isDependencyCyclic(dependency string, visited map[string]bool) bool {
-    for _, loader := range scoringConfig.Loaders {
+func (scoring *goscenScoring) isDependencyCyclic(dependency string, visited map[string]bool) bool {
+    for _, loader := range scoring.Loaders {
         if dependency == loader.ID {
-            if len(loader.Dependencies) == 0 {
+            if len(loader.DependenciesID) == 0 {
                 return false
             }
             visited[dependency] = true
-            for _, dep := range loader.Dependencies {
-                if visited[dep] || scoringConfig.isDependencyCyclic(dep, visited) {
+            for _, dep := range loader.DependenciesID {
+                if visited[dep] || scoring.isDependencyCyclic(dep, visited) {
                     return true
                 }
             }
@@ -147,44 +91,22 @@ func (scoringConfig *scoringConfig) isDependencyCyclic(dependency string, visite
     return false
 }
 
-func (loaderConfig *loaderConfig) check() error {
-    const (
-        errNilLoaderConfig = "loader config is nil"
-    )
-    if loaderConfig == nil {
-        return errors.New(errNilLoaderConfig)
-    }
-
-    if err := loaderConfig.checkID(); err != nil {
-        return err
-    }
-
-    if err := loaderConfig.checkType(); err != nil {
-        return err
-    }
-
-    return nil
+func (loader *goscenLoader) check() {
+    loader.checkID()
+    loader.checkType()
 }
 
-func (loaderConfig *loaderConfig) checkID() error {
-    const (
-        errEmptyLoaderID = "loader ID is empty"
-    )
-    if loaderConfig.ID == "" {
-        return errors.New(errEmptyLoaderID)
+func (loader *goscenLoader) checkID() {
+    if loader.ID == "" {
+        panic(errors.New("loader ID is empty"))
     }
-    return nil
 }
 
-func (loaderConfig *loaderConfig) checkType() error {
-    const (
-        errInvalidLoaderType = "loader type is not valid"
-        loaderTypeAPI        = "API"
-    )
-    switch loaderConfig.Type {
-    case loaderTypeAPI:
-    default:
-        return errors.New(errInvalidLoaderType)
+func (loader *goscenLoader) checkType() {
+    for _, loaderType := range loaderTypes {
+        if loader.Type == loaderType {
+            return
+        }
     }
-    return nil
+    panic(errors.New("loader type is not valid"))
 }
