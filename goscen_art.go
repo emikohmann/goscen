@@ -1,9 +1,7 @@
 package goscen
 
 const (
-    goscen =
-`
-
+    goscen = `
         GGGGGGGGGGGGG     OOOOOOOOO        SSSSSSSSSSSSSSS         CCCCCCCCCCCCCEEEEEEEEEEEEEEEEEEEEEENNNNNNNN        NNNNNNNN
      GGG::::::::::::G   OO:::::::::OO    SS:::::::::::::::S     CCC::::::::::::CE::::::::::::::::::::EN:::::::N       N::::::N
    GG:::::::::::::::G OO:::::::::::::OO S:::::SSSSSS::::::S   CC:::::::::::::::CE::::::::::::::::::::EN::::::::N      N::::::N
@@ -20,6 +18,5 @@ G:::::G        G::::GO:::::O     O:::::O            S:::::SC:::::C              
    GG:::::::::::::::G OO:::::::::::::OO S::::::SSSSSS:::::S   CC:::::::::::::::CE::::::::::::::::::::EN::::::N       N:::::::N
      GGG::::::GGG:::G   OO:::::::::OO   S:::::::::::::::SS      CCC::::::::::::CE::::::::::::::::::::EN::::::N        N::::::N
         GGGGGG   GGGG     OOOOOOOOO      SSSSSSSSSSSSSSS           CCCCCCCCCCCCCEEEEEEEEEEEEEEEEEEEEEENNNNNNNN         NNNNNNN
-
 `
 )
