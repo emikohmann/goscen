@@ -11,27 +11,34 @@ This library is oriented to the creation of loaders based scorings. In this sche
 ```javascript
 {
     "id": "fraud_scoring",
+
     "mode": "passive",
+
     "entry_point": "/scoring",
+
     "dependencies": [
         "payments",
         "biometrics"
     ],
+
     "loaders": [
         {
             "id": "biometrics",
+
             "dependencies": [
                 "payments"
             ]
         },
         {
             "id": "payments",
+
             "dependencies": [
                 "user"
             ]
         },
         {
             "id": "user",
+
             "dependencies": []
         }
     ]
@@ -64,10 +71,11 @@ import (
 func main() {
     goscene.WithLoaders(
         goscene.LoadersMapping{
-            "afip_data": afip.ExecuteLoader,
-            "bank_data": bank.ExecuteLoader,
+            "biometrics": biometrics.ExecuteLoader,
+            "payments":   payments.ExecuteLoader,
+            "user":       user.ExecuteLoader,
         },
-        scoring.StrongRules
+        scoring.FraudStrongRules
     )
     goscene.Run()
 }
