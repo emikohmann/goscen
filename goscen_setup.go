@@ -20,6 +20,7 @@ func WithLoaders(loadersExecutions LoadersMapping, scoringExecution goscenExecut
             if node.ID == scoring.ID {
                 node.Execution = scoringExecution
             }
+
             if node.ID == loaderID {
                 if node.Execution != nil {
                     panic(errors.New(fmt.Sprintf("%s node already has an execution assigned", node.ID)))

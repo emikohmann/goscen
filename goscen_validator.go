@@ -25,6 +25,7 @@ func (scoring *goscenScoring) checkMode() {
             return
         }
     }
+
     panic(errors.New(fmt.Sprintf("%s scoring mode is not valid", scoring.ID)))
 }
 
@@ -38,6 +39,7 @@ func (scoring *goscenScoring) checkEntryPoint() {
 func (scoring *goscenScoring) checkNodes() {
     scoring.checkNodesUniqueness()
     scoring.checkNodesDependencies()
+
     for _, node := range scoring.Nodes {
         node.check()
     }
@@ -48,6 +50,7 @@ func (scoring *goscenScoring) checkNodesUniqueness() {
     for _, node := range scoring.Nodes {
         uniqueness[node.ID]++
     }
+
     for id, count := range uniqueness {
         if count > 1 {
             panic(errors.New(fmt.Sprintf("%s node is duplicated", id)))
@@ -65,6 +68,7 @@ func (scoring *goscenScoring) checkDependenciesExistence() {
     for _, node := range scoring.Nodes {
         dependencies[node.ID]++
     }
+
     for _, node := range scoring.Nodes {
         for _, dependency := range node.DependenciesID {
             if dependencies[dependency] == 0 {
@@ -89,6 +93,7 @@ func (scoring *goscenScoring) isDependencyCyclic(dependency string, visited map[
             if len(node.DependenciesID) == 0 {
                 return false
             }
+
             visited[dependency] = true
             for _, dependencyID := range node.DependenciesID {
                 if visited[dependencyID] || scoring.isDependencyCyclic(dependencyID, visited) {
@@ -117,6 +122,7 @@ func (node *goscenNode) checkType() {
             return
         }
     }
+
     panic(errors.New(fmt.Sprintf("%s node type is not valid", node.ID)))
 }
 
