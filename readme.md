@@ -10,29 +10,29 @@ This library is oriented to the creation of loaders based scorings. In this sche
 
 ```json
 {
-    "id": "user_scoring",
+    "id": "fraud_scoring",
     "mode": "passive",
-    "entry_point": "/user_scoring",
+    "entry_point": "/scoring",
     "dependencies": [
-        "user_information"
+        "payments",
+        "biometrics"
     ],
     "loaders": [
         {
-            "id": "user_information",
+            "id": "biometrics",
             "dependencies": [
-                "afip_data",
-                "bank_data"
+                "payments"
             ]
         },
         {
-            "id": "afip_data",
+            "id": "payments",
+            "dependencies": [
+                "user"
+            ]
+        },
+        {
+            "id": "user",
             "dependencies": []
-        },
-        {
-            "id": "bank_data",
-            "dependencies": [
-                "afip_data"
-            ]
         }
     ]
 }
@@ -43,19 +43,16 @@ This library is oriented to the creation of loaders based scorings. In this sche
 ```go
 package loader
 
-type LoaderResult struct {
-
-}
+type LoaderResult struct {}
 
 func ExecuteLoader(input ...interface{}) ([]interface{}, apierrors.ApiError) {
-
     return []interface{}{
         &LoaderResult{},
     }, nil
 }
 ```
 
-* Finally, create yout scoring:
+* Finally, create and run your scoring:
 
 ```go
 package main
@@ -72,7 +69,6 @@ func main() {
         },
         scoring.StrongRules
     )
-
     goscene.Run()
 }
 ```
