@@ -65,7 +65,7 @@ func (scoring *goscenScoring) serve() {
         c.String(http.StatusOK, "pong")
     })
 
-    router.POST("/scoring", func(c *gin.Context) {
+    router.POST(scoring.EntryPoint, func(c *gin.Context) {
         res, apiErr := scoring.run()
         if apiErr != nil {
             c.JSON(apiErr.Status(), apiErr)
