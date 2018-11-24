@@ -3,35 +3,40 @@ package goscen
 import "github.com/mercadolibre/go-meli-toolkit/goutils/apierrors"
 
 const (
-    scoringTypeComplete    = "complete"
-    scoringTypeProgressive = "progressive"
-    loaderTypeAPI          = "API"
+    scoringModePassive = "passive"
+    scoringModeActive  = "active"
+    nodeTypeLazy       = "LAZY"
+    nodeTypeAPI        = "API"
 )
 
 var (
-    scoringTypes = []string{
-        scoringTypeComplete,
-        scoringTypeProgressive,
+    scoringModes = []string{
+        scoringModePassive,
+        scoringModeActive,
     }
 
-    loaderTypes = []string{
-        loaderTypeAPI,
+    nodeTypes = []string{
+        nodeTypeLazy,
+        nodeTypeAPI,
     }
 )
 
 type goscenScoring struct {
-    ID      string          `json:"id"`
-    Type    string          `json:"type"`
-    Loaders []*goscenLoader `json:"loaders"`
+    ID             string        `json:"id"`
+    Mode           string        `json:"mode"`
+    Type           string        `json:"type"`
+    EntryPoint     string        `json:"entry_point"`
+    DependenciesID []string      `json:"dependencies"`
+    Nodes          []*goscenNode `json:"loaders"`
 }
 
-type goscenLoader struct {
-    ID                  string          `json:"id"`
-    Type                string          `json:"type"`
-    DependenciesID      []string        `json:"dependencies"`
-    DependenciesLoaders []*goscenLoader `json:"-"`
-    Execution           goscenExecution `json:"-"`
-    ExecutionResult     []interface{}   `json:"-"`
+type goscenNode struct {
+    ID                string          `json:"id"`
+    Type              string          `json:"type"`
+    DependenciesID    []string        `json:"dependencies"`
+    DependenciesNodes []*goscenNode   `json:"-"`
+    Execution         GoscenExecution `json:"-"`
+    ExecutionResult   []interface{}   `json:"-"`
 }
 
-type goscenExecution func(...interface{}) ([]interface{}, apierrors.ApiError)
+type GoscenExecution func(...interface{}) ([]interface{}, apierrors.ApiError)

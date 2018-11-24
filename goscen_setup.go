@@ -3,7 +3,6 @@ package goscen
 import (
     "fmt"
     "errors"
-    "github.com/mercadolibre/go-meli-toolkit/goutils/apierrors"
 )
 
 var (
@@ -15,19 +14,24 @@ func init() {
     scoring.load()
 }
 
-func AddLoaderExecution(loaderID string, execution func(inputs ...interface{}) ([]interface{}, apierrors.ApiError)) {
-    for _, loader := range scoring.Loaders {
-        if loader.ID == loaderID {
-            if loader.Execution != nil {
-                panic(errors.New(fmt.Sprintf("%s loader already has an execution assigned", loader.ID)))
+func SetExecutions(loadersExecutions map[string]GoscenExecution, scoringExecution GoscenExecution) {
+    for loaderID, loaderExecution := range loadersExecutions {
+        for _, node := range scoring.Nodes {
+            if node.ID == scoring.ID {
+                node.Execution = scoringExecution
             }
-            loader.Execution = execution
+            if node.ID == loaderID {
+                if node.Execution != nil {
+                    panic(errors.New(fmt.Sprintf("%s node already has an execution assigned", node.ID)))
+                }
+                node.Execution = loaderExecution
+            }
         }
     }
 }
 
 func Run() {
-    scoring.checkLoadersExecutions()
+    scoring.checkExecutions()
     scoring.success()
     scoring.serve()
 }

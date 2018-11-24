@@ -20,18 +20,23 @@ func read() *goscenScoring {
     if err := json.Unmarshal(bytes, &scoring); err != nil {
         panic(err)
     }
+    scoring.Nodes = append(scoring.Nodes, &goscenNode{
+        ID:             scoring.ID,
+        Type:           scoring.Type,
+        DependenciesID: scoring.DependenciesID,
+    })
     return &scoring
 }
 
 func (scoring *goscenScoring) load() {
-    loaders := make(map[string]*goscenLoader)
-    for _, loader := range scoring.Loaders {
-        loaders[loader.ID] = loader
+    nodes := make(map[string]*goscenNode)
+    for _, node := range scoring.Nodes {
+        nodes[node.ID] = node
     }
-    for _, loader := range scoring.Loaders {
-        loader.DependenciesLoaders = make([]*goscenLoader, 0)
-        for _, dependencyID := range loader.DependenciesID {
-            loader.DependenciesLoaders = append(loader.DependenciesLoaders, loaders[dependencyID])
+    for _, node := range scoring.Nodes {
+        node.DependenciesNodes = make([]*goscenNode, 0)
+        for _, dependencyID := range node.DependenciesID {
+            node.DependenciesNodes = append(node.DependenciesNodes, nodes[dependencyID])
         }
     }
 }
@@ -39,8 +44,8 @@ func (scoring *goscenScoring) load() {
 func (scoring *goscenScoring) success() {
     fmt.Println(goscen)
     fmt.Println(fmt.Sprintf("%s SCORING", strings.ToUpper(scoring.ID)))
-    for _, loader := range scoring.Loaders {
-        fmt.Println(fmt.Sprintf("\n\tWITH LOADER [%s]", strings.ToUpper(loader.ID)))
+    for _, node := range scoring.Nodes {
+        fmt.Println(fmt.Sprintf("\n\tWITH NODE [%s]", strings.ToUpper(node.ID)))
     }
     fmt.Println(fmt.Sprintf("\nSuccessfully initialized.\n"))
 }
@@ -64,36 +69,36 @@ func (scoring *goscenScoring) serve() {
 }
 
 func (scoring *goscenScoring) run() apierrors.ApiError {
-    executions := make(map[*goscenLoader]bool)
-    for _, loader := range scoring.Loaders {
-        if apiErr := loader.run(executions); apiErr != nil {
+    executions := make(map[*goscenNode]bool)
+    for _, node := range scoring.Nodes {
+        if apiErr := node.run(executions); apiErr != nil {
             return apiErr
         }
     }
     return nil
 }
 
-func (loader *goscenLoader) run(executions map[*goscenLoader]bool) apierrors.ApiError {
-    if executions[loader] == true {
+func (node *goscenNode) run(executions map[*goscenNode]bool) apierrors.ApiError {
+    if executions[node] == true {
         return nil
     }
-    for _, dependencyLoader := range loader.DependenciesLoaders {
-        if executions[dependencyLoader] == false {
-            if apiErr := dependencyLoader.run(executions); apiErr != nil {
+    for _, dependencyNode := range node.DependenciesNodes {
+        if executions[dependencyNode] == false {
+            if apiErr := dependencyNode.run(executions); apiErr != nil {
                 return apiErr
             }
         }
     }
     inputs := make([]interface{}, 0)
-    for _, dependencyLoader := range loader.DependenciesLoaders {
-        inputs = append(inputs, dependencyLoader.ExecutionResult)
+    for _, dependencyNode := range node.DependenciesNodes {
+        inputs = append(inputs, dependencyNode.ExecutionResult)
     }
-    // fmt.Println("Running", loader.ID, "loader with inputs", inputs)
-    res, apiErr := loader.Execution(inputs...)
+    fmt.Println("Running", node.ID, "node with inputs", inputs)
+    res, apiErr := node.Execution(inputs...)
     if apiErr != nil {
         return apiErr
     }
-    loader.ExecutionResult = res
-    executions[loader] = true
+    node.ExecutionResult = res
+    executions[node] = true
     return nil
 }
