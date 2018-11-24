@@ -2,6 +2,7 @@ package goscen
 
 import (
     "fmt"
+    "errors"
     "strings"
     "net/http"
     "io/ioutil"
@@ -9,7 +10,6 @@ import (
     "github.com/gin-gonic/gin"
     "github.com/mercadolibre/go-meli-toolkit/goutils/apierrors"
     "github.com/mercadolibre/go-meli-toolkit/gingonic/mlhandlers"
-    "errors"
 )
 
 func read() *goscenScoring {

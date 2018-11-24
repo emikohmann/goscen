@@ -1,11 +1,12 @@
 package goscen
 
-import "github.com/mercadolibre/go-meli-toolkit/goutils/apierrors"
+import (
+    "github.com/mercadolibre/go-meli-toolkit/goutils/apierrors"
+)
 
 const (
     scoringModePassive = "passive"
     scoringModeActive  = "active"
-    nodeTypeLazy       = "LAZY"
 )
 
 var (
@@ -15,7 +16,7 @@ var (
     }
 
     nodeTypes = []string{
-        nodeTypeLazy,
+        "",
     }
 )
 
@@ -33,8 +34,10 @@ type goscenNode struct {
     Type              string          `json:"type"`
     DependenciesID    []string        `json:"dependencies"`
     DependenciesNodes []*goscenNode   `json:"-"`
-    Execution         GoscenExecution `json:"-"`
+    Execution         goscenExecution `json:"-"`
     ExecutionResult   []interface{}   `json:"-"`
 }
 
-type GoscenExecution func(...interface{}) ([]interface{}, apierrors.ApiError)
+type goscenExecution func(...interface{}) ([]interface{}, apierrors.ApiError)
+
+type LoadersMapping map[string]goscenExecution
