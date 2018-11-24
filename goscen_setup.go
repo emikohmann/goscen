@@ -14,7 +14,7 @@ func init() {
     scoring.load()
 }
 
-func WithLoaders(loadersExecutions map[string]goscenExecution, scoringExecution goscenExecution) *goscenScoring {
+func WithLoaders(loadersExecutions LoadersMapping, scoringExecution goscenExecution) {
     for loaderID, loaderExecution := range loadersExecutions {
         for _, node := range scoring.Nodes {
             if node.ID == scoring.ID {
@@ -28,10 +28,9 @@ func WithLoaders(loadersExecutions map[string]goscenExecution, scoringExecution 
             }
         }
     }
-    return scoring
 }
 
-func (scoring *goscenScoring) Run() {
+func Run() {
     scoring.checkExecutions()
     scoring.success()
     scoring.serve()
