@@ -8,7 +8,7 @@ This library is oriented to the creation of loaders based scorings. In this sche
 
 * First, create your file `config.json`:
 
-```json
+```javascript
 {
     "id": "fraud_scoring",
     "mode": "passive",
