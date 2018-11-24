@@ -9,6 +9,7 @@ import (
     "github.com/gin-gonic/gin"
     "github.com/mercadolibre/go-meli-toolkit/goutils/apierrors"
     "github.com/mercadolibre/go-meli-toolkit/gingonic/mlhandlers"
+    "errors"
 )
 
 func read() *goscenScoring {
@@ -58,36 +59,36 @@ func (scoring *goscenScoring) serve() {
     })
 
     router.POST("/scoring", func(c *gin.Context) {
-        if apiErr := scoring.run(); apiErr != nil {
+        res, apiErr := scoring.run()
+        if apiErr != nil {
             c.JSON(apiErr.Status(), apiErr)
             return
         }
-        c.JSON(http.StatusCreated, nil)
+        c.JSON(http.StatusCreated, res)
     })
 
     router.Run(":8080")
 }
 
-func (scoring *goscenScoring) run() apierrors.ApiError {
+func (scoring *goscenScoring) run() ([]interface{}, apierrors.ApiError) {
     executions := make(map[*goscenNode]bool)
     for _, node := range scoring.Nodes {
         if node.ID == scoring.ID {
-            if apiErr := node.run(executions); apiErr != nil {
-                return apiErr
-            }
+            return node.run(executions)
         }
     }
-    return nil
+    err := errors.New("scoring node not found")
+    return nil, apierrors.NewInternalServerApiError(err.Error(), err)
 }
 
-func (node *goscenNode) run(executions map[*goscenNode]bool) apierrors.ApiError {
+func (node *goscenNode) run(executions map[*goscenNode]bool) ([]interface{}, apierrors.ApiError) {
     if executions[node] == true {
-        return nil
+        return nil, nil
     }
     for _, dependencyNode := range node.DependenciesNodes {
         if executions[dependencyNode] == false {
-            if apiErr := dependencyNode.run(executions); apiErr != nil {
-                return apiErr
+            if _, apiErr := dependencyNode.run(executions); apiErr != nil {
+                return nil, apiErr
             }
         }
     }
@@ -97,9 +98,9 @@ func (node *goscenNode) run(executions map[*goscenNode]bool) apierrors.ApiError 
     }
     res, apiErr := node.Execution(inputs...)
     if apiErr != nil {
-        return apiErr
+        return nil, apiErr
     }
     node.ExecutionResult = res
     executions[node] = true
-    return nil
+    return res, nil
 }
