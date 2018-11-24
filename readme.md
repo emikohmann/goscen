@@ -16,25 +16,18 @@ This library is oriented to the creation of loaders based scorings. In this sche
 
     "entry_point": "/scoring",
 
-    "dependencies": [
-        "payments",
-        "biometrics"
-    ],
+    "dependencies": [ "payments", "biometrics" ],
 
     "loaders": [
         {
             "id": "biometrics",
 
-            "dependencies": [
-                "payments"
-            ]
+            "dependencies": [ "payments" ]
         },
         {
             "id": "payments",
 
-            "dependencies": [
-                "user"
-            ]
+            "dependencies": [ "user" ]
         },
         {
             "id": "user",
@@ -50,12 +43,11 @@ This library is oriented to the creation of loaders based scorings. In this sche
 ```go
 package loader
 
-type LoaderResult struct {}
+type Result struct {}
 
 func ExecuteLoader(input ...interface{}) ([]interface{}, apierrors.ApiError) {
-    return []interface{}{
-        &LoaderResult{},
-    }, nil
+
+    return []interface{}{ &Result{}, }, nil
 }
 ```
 
@@ -64,19 +56,21 @@ func ExecuteLoader(input ...interface{}) ([]interface{}, apierrors.ApiError) {
 ```go
 package main
 
-import (
-    "github.com/emikohmann/goscene"
-)
+import "github.com/emikohmann/goscene"
 
 func main() {
-    goscene.WithLoaders(
-        goscene.LoadersMapping{
+    goscene.WithLoaders( goscene.LoadersMapping{
+
             "biometrics": biometrics.ExecuteLoader,
+
             "payments":   payments.ExecuteLoader,
+
             "user":       user.ExecuteLoader,
         },
-        scoring.FraudStrongRules
+
+        scoring.FraudStrongRules,
     )
+
     goscene.Run()
 }
 ```
