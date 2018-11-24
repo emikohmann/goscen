@@ -71,8 +71,10 @@ func (scoring *goscenScoring) serve() {
 func (scoring *goscenScoring) run() apierrors.ApiError {
     executions := make(map[*goscenNode]bool)
     for _, node := range scoring.Nodes {
-        if apiErr := node.run(executions); apiErr != nil {
-            return apiErr
+        if node.ID == scoring.ID {
+            if apiErr := node.run(executions); apiErr != nil {
+                return apiErr
+            }
         }
     }
     return nil
@@ -93,7 +95,6 @@ func (node *goscenNode) run(executions map[*goscenNode]bool) apierrors.ApiError 
     for _, dependencyNode := range node.DependenciesNodes {
         inputs = append(inputs, dependencyNode.ExecutionResult)
     }
-    fmt.Println("Running", node.ID, "node with inputs", inputs)
     res, apiErr := node.Execution(inputs...)
     if apiErr != nil {
         return apiErr

@@ -6,7 +6,6 @@ const (
     scoringModePassive = "passive"
     scoringModeActive  = "active"
     nodeTypeLazy       = "LAZY"
-    nodeTypeAPI        = "API"
 )
 
 var (
@@ -17,7 +16,6 @@ var (
 
     nodeTypes = []string{
         nodeTypeLazy,
-        nodeTypeAPI,
     }
 )
 
